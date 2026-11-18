@@ -5,9 +5,19 @@ SELECT *
 FROM czechia_payroll cp 
 LIMIT 20;
 
+
 SELECT *
 FROM czechia_payroll cp 
 WHERE cp.value_type_code = '5958';
+
+SELECT 
+	cp.value_type_code ,
+	count(*) AS pocet_zaznamu,
+	count(*) FILTER (WHERE cp.value IS null) AS pocet_null_zaznamu
+FROM czechia_payroll cp 
+GROUP BY cp.value_type_code
+ORDER BY cp.value_type_code; -- u prům. hrubých mezd nechybí žádná hodnota
+
 
 SELECT DISTINCT cp.payroll_year 
 FROM czechia_payroll cp
@@ -16,23 +26,52 @@ order BY cp.payroll_year ASC;
 SELECT DISTINCT cp.calculation_code 
 FROM czechia_payroll cp ;
 
+SELECT 
+	cp.payroll_year ,
+	cp.payroll_quarter
+FROM czechia_payroll cp
+GROUP BY cp.payroll_year, 
+		cp.payroll_quarter 
+ORDER BY cp.payroll_year, cp.payroll_quarter ASC; -- kompletní kvartální data od 01/2000 do 02/2021
 
-/* prozkoumání czechia payroll:
- * co je ID (primární klíč)? zřemě identifikátor daného údaje
+SELECT 
+	cp.payroll_year ,
+	cp.industry_branch_code ,
+	COUNT(DISTINCT cp.payroll_quarter) AS pocet_kvartalu
+FROM czechia_payroll cp
+GROUP BY cp.payroll_year, 
+		cp.industry_branch_code 
+ORDER BY cp.payroll_year ASC;
+
+
+/* výsledky prozkoumání tabulek
+ * czechia payroll, czechia_payroll_calculation, czechia_payroll_industry_branch
+ * czechia_payroll_unit a czechia_payroll_value_type:
+ * ID (primární klíč) - zřejmě identifikátor daného údaje
  * value - zahrnuje i nulové hodnoty (3096 řádků), nulové hodnoty jsou 
  * pouze u value type code 316 (prům. počet osob v odvětví),
- * u value type code 5958 žádné hodnoty nechybí
- * value type code - prim klíč k cz payroll value type
+ * u value type code 5958 (hrubá mzda) žádné hodnoty nechybí
+ * value type code - prim. klíč k cz payroll value type
  * (2 hodnoty: 316 - prům počet osob nebo 5958 - prům hrubá mzda)
  * unit code - 2 hodnoty: tis. osob nebo Kč
  * calculation code - 2 hodnoty: fyzický nebo přepočtený, použít přepočtený (na plný
- * úvazek)
- * tzn. přepočtený na celé úvazky
+ * úvazek), aby porovnání dávalo větší smysl 
+ * payroll year, quater - ověřena kompletnost časového pokrytí za období 01/2000-02/2021
  * industry branch code - odvětví
- * payroll year, quater - zahrnuty roky 2000-2021
+
  */
 
-/* prozkoumání czechia price:
+ -- prozkoumání tabulky czechia_price:
+
+SELECT *
+FROM czechia_price cp
+LIMIT 20;
+
+SELECT MAX(cp.date_to) AS nejstarsi 
+FROM czechia_price cp;
+
+
+/* výskledky prozkoumání czechia_price:
  * co je ID (primární klíč)? zřemě identifikátor daného údaje
  * value - nejsou nulové hodnoty
  * category code - 27 kategorií potravin, viz tab cz price category
@@ -45,21 +84,9 @@ FROM czechia_payroll cp ;
 
 /* tzn. společné období pro obě tabulky je od 2006-01-02 do 2018-12-16 tzn.
  * není zahrnutý celý prosinec 2018 (celý 4. kvartál 2018), 
- * data v payrol jsou po kvartálech: rok, quater
+ * data v czechia_payroll jsou po kvartálech: rok, quater
  */
 
-SELECT *
-FROM czechia_price cp
-LIMIT 20;
-
-SELECT MAX(cp.date_to) AS nejstarsi 
-FROM czechia_price cp;
-
-SELECT 
-	cp.payroll_year ,
-	cp.payroll_quarter 
-FROM czechia_payroll cp
-ORDER BY cp.payroll_year , payroll_quarter ;
 
 -- Další nálezy: 
 
@@ -70,9 +97,8 @@ ORDER BY cp.payroll_year , payroll_quarter ;
  * do 2Q 2021, tzn. údaje za 2006 až 2018 jsou kompletní 
  * 
  * czechia_price:
- * region code - jsou tam i NULL hodnoty tzn. pravděpodobně tam, kde se jedná o celou ČR
- * jak ověřím, že se opravu jedná o celorepublikové ceny?
- * ověření kolik cenových porovnání (cenových období např. týdnů, ne jen cenových záznamů) existuje 
+ * region code - jsou tam i NULL hodnoty tzn. pravděpodobně tam, kde se jedná o celou ČR (nutno ověřit)
+ * ověření kolik cenových porovnání (cenových období např. týdnů, ne jenom cenových záznamů) existuje 
  * v jednotlivých letech tzn. zda mám zahrnout i celý rok 2018. 
  * počet cenových záznamů během roku: 
  * roky 2006 až 2008: od 18795 do 17277 záznamů, pak počet klesá:
@@ -92,20 +118,20 @@ GROUP BY rok
 ORDER BY rok;
 
 /* zjištění:
- Výrazně se změnila četnost sledování cen, z výsledků vidíme:
+ Výrazně se během let změnila četnost sledování cen, z výsledků vidíme:
 - 2006–2008: přibližně týdenní sledování.
 - 2009–2010: přibližně dvoutýdenní sledování.
 - 2011–2018: měsíční sledování.
 Vzhledem k rozdílné četnosti měření musím ověřit, zda měření jsou rovnoměrně rozložena
 během celého roku. Pokud by například většina měření pocházela z prvního pololetí, mohl by být
 roční průměr zkreslený. 
-
-- rok 2018 vypadá kompletně, stejné počty měření i datumů jako v jiných letech,
+- rok 2018 vypadá kompletně, stejné počty měření i datumů jako v jiných letech
  */
 
 /* region code - jsou tam i NULL hodnoty tzn. pravděpodobně tam, kde se jedná o celou ČR
  * ověřím, že se opravu jedná o celorepublikové ceny:
  */
+
 SELECT
 	EXTRACT (YEAR FROM date_from) AS rok,
 	CASE 
@@ -122,15 +148,16 @@ GROUP BY
 	typ_zaznamu
 ORDER BY rok, typ_zaznamu;	
 
-/*zjištění: regiony obsahují přibližně 14x víc záznamů měření, tzn. vypadá to, že hodnoty NULL opravdu 
+/* zjištění: regiony obsahují přibližně 14x víc záznamů měření, tzn. vypadá to, že hodnoty NULL opravdu 
  * odpovídají celorepublikovým měřením.
  * v každém roce mají obě skupiny stejný počet cenových období
  * počty kategorií se mění z 26 na 27: 
  * 2006–2014: 26 kategorií.
  * 2015–2018: 27 kategorií.
  * tzn. potravina, která se začala sledovat až v roce 2015, nemůže mít meziroční změnu za rok 2015,
- * musím si dát pozor u třetí výzkumné otázky..
- * ověřím, zda jsou všechny kategorie sledovány pravidelneě, měli bycho mít 27x12 období tzn. 324 ale
+ * musím to brát v úvahu u třetí výzkumné otázky (3. Která kategorie potravin zdražuje nejpomaleji (je u ní 
+ * nejnižší percentuální meziroční nárůst?)
+ * ověřím, zda jsou všechny kategorie sledovány pravidelně, měli bychom mít 27x12 období tzn. 324 ale
  * máme jen 313 záznamů. tzn zjistím, kterých potravin se to týká viz níže př. rok 2018
  * 
  */
@@ -144,7 +171,7 @@ GROUP BY cp.category_code
 ORDER BY pocet_cenovych_obdobi ASC;
 
 /* zjištění: počet cenových pbdobí je u všech kategorií stejný (12) jen u kategorie
- * 2000001 (kapr) je jen jedno cenové období, protože se prodává sezonně.
+ * 2000001 (kapr) je jen jedno cenové období, protože se prodává sezónně.
  * Můžu ho ale zahrnout, pokud je sledován pravidelně každý rok v prosinci, ověření:
  */
 
@@ -162,32 +189,30 @@ ORDER BY rok, mesic;
  * v některých rocích je kapr sledován i v listopadu, ale většinou jen v prosinci.
  * avg(value) lze použít
  * Kapr má cenová data ve všech letech 2006–2018. Ale roční ceny kapra nejsou ve všech letech měřeny ve zcela stejném měsíci. 
-Při interpretaci meziročních změn je vhodné toto omezení uvést.
+Při interpretaci meziročních změn toto omezení uvedu. 
  */
 
 
-/* do README:
+/* Souhrn:
  * Analýza cen potravin vychází z dat za období 2006–2018. 
  * Četnost dostupných cenových pozorování se v průběhu let mění: 
  * v letech 2006–2008 je přibližně týdenní, v letech 2009–2010 přibližně dvoutýdenní 
  * a od roku 2011 měsíční. 
  * Data obsahují 26 potravinových kategorií do roku 2014 a 27 kategorií od roku 2015. 
- * Regionální údaje jsou evidovány samostatně od záznamů bez uvedeného regionu ( = celorepubliková data?).
- * Ověření co znamená region NULL:
- * do README: Při analýze cen potravin byly použity záznamy s hodnotou region_code IS NULL. 
+ * 
+ * Při analýze cen potravin byly použity záznamy s hodnotou region_code IS NULL. 
  * Na základě struktury dat, shodného časového pokrytí a poměru regionálních a neregionálních záznamů 14 : 1 se 
  * předpokládá, že tyto záznamy představují celorepublikové ceny. 
  * Z oficiálního zdroje ČSÚ: datová sada skutečně obsahuje ceny za jednotlivé kraje i za celou Českou republiku
  * (hodnota 97 - ČR, hodnoty 100 - kraje).  *Z toho vyplývá, že je velmi pravděpodobné, že 
  * region_code IS NULL označuje celorepublikové ceny.
  *
- * do README:
  * Sezónnost cenových dat: 
  * Při kontrole úplnosti cenových údajů bylo zjištěno, že v roce 2018 obsahuje
  * 26 potravinových kategorií 12 cenových období, zatímco kategorie „Kapr živý“ 
  * (kód 2000001) obsahuje pouze jedno cenové období. Tento rozdíl odpovídá sezónnímu charakteru prodeje 
  * této potraviny. Při analýze meziročního vývoje cen bude zohledněna odlišná četnost 
  * jejího sledování.  
- * /
+ */
 
 
