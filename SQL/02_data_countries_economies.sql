@@ -34,7 +34,7 @@ GROUP BY e.country ;
 
 
 /* kontrola chybějících hodnot GDP, GINI, population:
- * z 585 záznamů: HDP chybí u 37 států, GINI u 124 států a populace je kompletní všude
+ * z 585 záznamů: HDP chybí u 37 záznamů, GINI u 124 záznamů a populace je kompletní všude
  * ČR má údaje kompletní
  * chybějící údaje ponechám jako NULL
  */
