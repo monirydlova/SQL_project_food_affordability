@@ -2,6 +2,8 @@
 
 ## 1. Cíl projektu
 
+Projekt jsem samostatně zpracovala jako součást kurzu Datová akademie od společnosti Engeto.
+
 Cílem projektu je analyzovat vývoj průměrných mezd a cen vybraných základních potravin v České republice a vyhodnotit změny jejich dostupnosti v čase.
 
 Analýza se zaměřuje na následující výzkumné otázky:
@@ -12,7 +14,7 @@ Analýza se zaměřuje na následující výzkumné otázky:
 4. Existoval rok, ve kterém růst cen potravin převýšil růst mezd o více než 10 procentních bodů?
 5. Existuje souvislost mezi vývojem HDP a změnami mezd a cen potravin ve stejném nebo následujícím roce?
 
-Výstupem projektu budou dvě databázové tabulky obsahující sjednocená data mezd a cen potravin za Českou republiku a doplňující ekonomické ukazatele evropských států.
+Pro zpracování projektu jsem vytvořila dvě databázové tabulky: primární tabulku s údaji o mzdách a cenách potravin v ČR a sekundární tabulku s ekonomickými ukazateli evropských států.
 
 ## 2. Použité datové zdroje
 
@@ -68,11 +70,13 @@ Tabulka dále rozlišuje:
 - způsob výpočtu (fyzický a přepočtený počet zaměstnanců),
 - jednotlivá odvětví.
 
-**Dopad na další zpracování:**
+**Rozhodnutí pro další zpracování:**
 
-Pro analýzu mezd bude použit typ hodnoty 5958 a odpovídající jednotka Kč.
+Pro analýzu jsem použila údaje o průměrné hrubé mzdě (`value_type_code = 5958`) a přepočtený způsob výpočtu (`calculation_code = 200`). Ten jsem zvolila proto, aby bylo možné lépe porovnávat mzdy mezi odvětvími bez zkreslení způsobeného rozdílnými pracovními úvazky.
 
-Před roční agregací bude nutné zvolit konzistentní způsob výpočtu mzdy a ověřit úplnost čtvrtletních údajů.
+Ověřila jsem, že pro období 2006–2018 jsou dostupná všechna čtyři čtvrtletí a u vybraných mzdových údajů nechybí hodnoty.
+
+Průměrnou měsíční mzdu za jednotlivé roky počítám jako aritmetický průměr čtyř čtvrtletních hodnot.
 
 ### 3.2 Cenová data – `czechia_price`
 
@@ -196,20 +200,75 @@ Toto období umožňuje porovnávat vývoj průměrných mezd a cen potravin za 
 
 ## 4. Příprava dat pro analýzu
 
-*Následující část bude doplněna po vytvoření výsledných databázových tabulek.*
+Pro další analýzu jsem vytvořila dvě výsledné databázové tabulky za období 2006–2018.
 
-Předpokládaný postup:
+### 4.1 Primární tabulka – mzdy a ceny potravin
 
-1. Výběr odpovídajících mzdových údajů.
-2. Agregace čtvrtletních mezd na roční úroveň podle odvětví.
-3. Výpočet průměrných ročních cen jednotlivých potravin.
-4. Propojení dat mezd a cen podle společného roku.
-5. Vytvoření sekundární tabulky ekonomických ukazatelů evropských států.
+**Tabulka:** `t_monika_rydlova_project_sql_primary_final`
 
-## 5. Výzkumné otázky a výsledky
+Pro vytvoření primární tabulky jsem nejprve samostatně připravila roční údaje o mzdách a cenách potravin za období 2006–2018.
+
+U mezd jsem pro jednotlivá odvětví vypočítala průměrnou měsíční hrubou mzdu za rok ze čtyř čtvrtletních hodnot. Ponechala jsem také souhrnné mzdy za všechna odvětví, které jsou ve zdrojových datech označené `industry_branch_code IS NULL`.
+
+U potravin jsem vypočítala průměrnou roční cenu jednotlivých kategorií z dostupných cenových pozorování.
+
+Obě datové sady jsem připravila pomocí CTE (`wages` a `prices`) a následně propojila podle společného roku.
+
+Zkontrolovala jsem také propojení s číselníky odvětví a potravin. U všech vyplněných kódů byly nalezeny odpovídající názvy.
+
+**Výsledná tabulka obsahuje 6 840 záznamů** a slouží jako podklad pro analýzu vývoje mezd, cen a dostupnosti potravin v ČR.
+
+### 4.2 Sekundární tabulka – ekonomické údaje evropských států
+
+**Tabulka:** `t_monika_rydlova_project_sql_secondary_final`
+
+Pro vytvoření sekundární tabulky jsem použila údaje z tabulek `economies` a `countries` za období 2006–2018.
+
+Nejdříve jsem ověřila možnost propojení obou tabulek podle názvu země. Zjistila jsem, že 68 unikátních názvů z `economies` nemá odpovídající záznam v `countries`. Jedná se především o souhrnné geografické a ekonomické oblasti, ale také o některé státy a území.
+
+Pro výslednou tabulku jsem proto použila `INNER JOIN` a vybrala pouze evropské státy podle sloupce `continent`.
+
+Získala jsem **45 evropských států**, u kterých jsem ověřila úplnost časového pokrytí a případné duplicity. Každý stát má záznam za všech 13 let a žádná kombinace státu a roku se neopakuje.
+
+Při kontrole chybějících hodnot jsem zjistila:
+
+| Ukazatel | Chybějící záznamy |
+|---|---:|
+| HDP | 37 |
+| GINI koeficient | 124 |
+| Populace | 0 |
+
+Chybějící hodnoty jsem ponechala jako `NULL`, abych zachovala ostatní dostupné údaje bez jejich nahrazování odhady.
+
+**Výsledná tabulka obsahuje 585 záznamů** (45 států × 13 let) a zahrnuje HDP, GINI koeficient a počet obyvatel jednotlivých států.
+
+### 4.3 Metodická omezení
+
+Při následné analýze bude potřeba zohlednit několik omezení vstupních dat a zvolené metodiky:
+
+- **Mzdy:** Pracuji s průměrnými hrubými mzdami, ne s čistými příjmy. Výsledky dostupnosti potravin proto budou představovat orientační srovnání.
+- **Ceny potravin:** Četnost cenových pozorování se během sledovaného období měnila. Roční průměry tak vycházejí z různého počtu měření.
+- **Sezónnost:** U kapra jsou dostupná převážně listopadová a prosincová měření, což může ovlivnit meziroční porovnání.
+- **Potravinové kategorie:** Od roku 2015 přibyla jedna kategorie. Při výpočtu meziročních změn bude nutné ověřit dostupnost ceny v předchozím roce.
+- **Celorepublikové ceny:** Používám záznamy s `region_code IS NULL`, u kterých na základě průzkumu předpokládám, že představují ceny za celou ČR.
+- **Ekonomické údaje:** Některé hodnoty HDP a GINI koeficientu chybí. V sekundární tabulce zůstávají jako `NULL`.
+
+## 5. SQL skripty v repozitáři
+
+Všechny SQL skripty jsou uložené ve složce `SQL`. Kromě finálních dotazů obsahují také průběžné kontroly a moje poznámky k práci s daty.
+
+| Soubor | Obsah |
+|---|---|
+| `00_data_exploration.sql` | Průzkum zdrojových dat a kontrola jejich úplnosti |
+| `01_data_payrol_price.sql` | Příprava a propojení údajů o mzdách a cenách potravin |
+| `02_data_countries_economies.sql` | Průzkum ekonomických údajů evropských států |
+| `t_monika_rydlova_project_sql_primary_final.sql` | Vytvoření primární tabulky |
+| `t_monika_rydlova_project_sql_secondary_final.sql` | Vytvoření sekundární tabulky |
+
+## 6. Výzkumné otázky a výsledky
 
 *Tato část bude doplněna po dokončení SQL analýz.*
 
-## 6. Závěr
+## 7. Závěr
 
 *Tato část bude doplněna po vyhodnocení všech výzkumných otázek.*
