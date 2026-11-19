@@ -40,7 +40,7 @@ Primární údaje o mzdách a cenách potravin pocházejí z otevřených dat Č
 
 ## 3. Průzkum a kontrola vstupních dat
 
-Před vytvořením výsledných tabulek byl proveden průzkum struktury a obsahu zdrojových dat.
+Před vytvořením výsledných tabulek jsem provedla průzkum struktury a obsahu zdrojových dat.
 
 Kontrola byla zaměřena zejména na:
 - dostupná časová období,
@@ -54,7 +54,7 @@ Kontrola byla zaměřena zejména na:
 
 Tabulka obsahuje údaje za období **2000–2021**, členěné podle roku, čtvrtletí, odvětví a dalších parametrů.
 
-Při průzkumu byly identifikovány dva typy hodnot:
+Při průzkumu jsem identifikovala dva typy hodnot:
 
 | Kód | Význam |
 |---|---|
@@ -63,7 +63,7 @@ Při průzkumu byly identifikovány dva typy hodnot:
 
 Ve sloupci `value` bylo identifikováno **3 096 chybějících hodnot (NULL)**. Tyto hodnoty se vyskytují pouze u typu 316.
 
-U hodnot odpovídajících průměrné hrubé mzdě (`value_type_code = 5958`) nebyly zjištěny chybějící hodnoty.
+U hodnot odpovídajících průměrné hrubé mzdě (`value_type_code = 5958`) jsem nezjistila chybějící hodnoty.
 
 Tabulka dále rozlišuje:
 - jednotky měření (Kč a tisíce osob),
@@ -72,7 +72,7 @@ Tabulka dále rozlišuje:
 
 **Rozhodnutí pro další zpracování:**
 
-Pro analýzu jsem použila údaje o průměrné hrubé mzdě (`value_type_code = 5958`) a přepočtený způsob výpočtu (`calculation_code = 200`). Ten jsem zvolila proto, aby bylo možné lépe porovnávat mzdy mezi odvětvími bez zkreslení způsobeného rozdílnými pracovními úvazky.
+Pro analýzu jsem použila údaje o průměrné hrubé mzdě (`value_type_code = 5958`) a přepočtený způsob výpočtu na plný úvazek (`calculation_code = 200`). Ten jsem zvolila proto, aby bylo možné lépe porovnávat mzdy mezi odvětvími bez zkreslení způsobeného rozdílnými pracovními úvazky.
 
 Ověřila jsem, že pro období 2006–2018 jsou dostupná všechna čtyři čtvrtletí a u vybraných mzdových údajů nechybí hodnoty.
 
@@ -84,7 +84,7 @@ Tabulka obsahuje údaje o cenách vybraných potravin za období **2006–2018**
 
 Nejstarší dostupné cenové období začíná 2. 1. 2006, poslední končí 16. 12. 2018.
 
-Ve sloupci `value` nebyly zjištěny chybějící hodnoty.
+Ve sloupci `value` jsem nezjistila chybějící hodnoty.
 
 Datová sada obsahuje celkem 27 kategorií potravin, jejichž dostupnost se v jednotlivých letech mírně liší.
 
@@ -118,13 +118,13 @@ Od roku 2011 obsahuje každý rok 12 různých počátečních dat cenových obd
 
 Rok 2018 má stejné počty cenových záznamů i období jako roky 2015–2017. Z tohoto hlediska není důvod jej automaticky vyřazovat z analýzy.
 
-Rozdílná četnost pozorování bude zohledněna při interpretaci ročních průměrných cen.
+Rozdílnou četnost pozorování zohledním při interpretaci ročních průměrných cen.
 
 ### 3.3 Regionální a celorepublikové ceny
 
 Sloupec `region_code` obsahuje kódy jednotlivých krajů a hodnoty `NULL`.
 
-Pro ověření významu těchto hodnot byly porovnány počty cenových záznamů, období a kategorií u obou skupin.
+Pro ověření významu těchto hodnot jsem porovnala počty cenových záznamů, období a kategorií u obou skupin.
 
 Bylo zjištěno, že:
 - obě skupiny mají shodné počty cenových období,
@@ -176,7 +176,7 @@ V roce 2009 byla zaznamenána:
 
 Rozdíl činil 1,71 Kč/kg, tedy přibližně 2,1 % vzhledem k listopadové ceně.
 
-Tato kontrola potvrdila sezónní charakter cenových pozorování kapra.
+Tato kontrola mi potvrdila sezónní charakter cenových pozorování kapra.
 
 **Rozhodnutí pro další analýzu:**
 
