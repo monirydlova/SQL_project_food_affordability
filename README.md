@@ -143,7 +143,7 @@ Poměr regionálních a neregionálních záznamů odpovídá počtu 14 krajů �
 
 Oficiální zdroj ČSÚ rozlišuje celorepublikové a krajské údaje.
 
-Na základě těchto zjištění se předpokládá, že záznamy s `region_code IS NULL` představují celorepublikové ceny.
+Na základě těchto zjištění předpokládám, že záznamy s `region_code IS NULL` představují celorepublikové ceny.
 
 Tento předpoklad nebylo možné přímo potvrdit z dokumentace transformace původních dat do výukové databáze.
 
@@ -155,7 +155,7 @@ V letech 2006–2014 obsahují data 26 kategorií potravin.
 
 Od roku 2015 je dostupných 27 kategorií.
 
-Při kontrole úplnosti cenových údajů za rok 2018 bylo zjištěno:
+Při kontrole úplnosti cenových údajů za rok 2018 jsem zjistila:
 
 - 26 kategorií obsahuje 12 cenových období.
 - Jedna kategorie obsahuje pouze jedno cenové období.
@@ -182,11 +182,11 @@ Tato kontrola potvrdila sezónní charakter cenových pozorování kapra.
 
 Kategorie Kapr živý nebude automaticky vyřazena, protože její ceny jsou dostupné ve všech sledovaných letech.
 
-Při interpretaci meziročního vývoje však bude zohledněno, že její roční cena vychází z omezeného počtu sezónních pozorování.
+Při interpretaci meziročního vývoje ale zohledním, že její roční cena vychází z omezeného počtu sezónních pozorování.
 
 ### 3.5 Společné období cen a mezd
 
-Porovnáním dostupných roků obou datových sad bylo zjištěno:
+Porovnáním dostupných roků obou datových sad jsem zjistila:
 
 | Datová sada | Dostupné období |
 |---|---|
@@ -194,7 +194,7 @@ Porovnáním dostupných roků obou datových sad bylo zjištěno:
 | Ceny potravin | 2006–2018 |
 | **Společné období** | **2006–2018** |
 
-Pro vytvoření primární výsledné tabulky bylo zvoleno období **2006–2018**.
+Pro vytvoření primární výsledné tabulky jsem zvolila období **2006–2018**.
 
 Toto období umožňuje porovnávat vývoj průměrných mezd a cen potravin za stejné kalendářní roky.
 
