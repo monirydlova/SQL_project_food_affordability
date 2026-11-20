@@ -262,12 +262,41 @@ Všechny SQL skripty jsou uložené ve složce `SQL`. Kromě finálních dotazů
 | `00_data_exploration.sql` | Průzkum zdrojových dat a kontrola jejich úplnosti |
 | `01_data_payrol_price.sql` | Příprava a propojení údajů o mzdách a cenách potravin |
 | `02_data_countries_economies.sql` | Průzkum ekonomických údajů evropských států |
+| `03_research_question_1.sql` | Analýza meziročního vývoje mezd podle odvětví – 1. výzkumná otázka |
 | `t_monika_rydlova_project_sql_primary_final.sql` | Vytvoření primární tabulky |
 | `t_monika_rydlova_project_sql_secondary_final.sql` | Vytvoření sekundární tabulky |
 
 ## 6. Výzkumné otázky a výsledky
 
-*Tato část bude doplněna po dokončení SQL analýz.*
+### 6.1 Rostou mzdy ve všech odvětvích, nebo v některých letech dochází k jejich poklesu?
+
+**Postup:** Z primární tabulky jsem získala jedinečné kombinace roku, odvětví a průměrné měsíční mzdy, aby se mzdové údaje neopakovaly pro jednotlivé potravinové kategorie. Pomocí funkce `LAG()` jsem pro každé odvětví zjistila mzdu předchozího roku a vypočítala meziroční procentuální změnu. Následně jsem vyhledala poklesy a identifikovala odvětví, ve kterých k poklesu nedošlo.
+
+**Výsledky za období 2006–2018:**
+
+- Alespoň jeden meziroční pokles průměrné mzdy zaznamenalo **16 z 19 odvětví (84,2 %)**.
+- Ve **3 odvětvích** nebyl zaznamenán žádný meziroční pokles: **zpracovatelský průmysl (C)**, **zdravotní a sociální péče (Q)** a **ostatní činnosti (S)**.
+- Nejvýraznější meziroční poklesy se soustředily do roku **2013**.
+
+**Pět největších jednotlivých meziročních poklesů:**
+
+| Odvětví | Rok | Meziroční změna mzdy |
+|---|---:|---:|
+| Peněžnictví a pojišťovnictví | 2013 | −8,83 % |
+| Výroba a rozvod elektřiny, plynu, tepla a klimatizovaného vzduchu | 2013 | −4,44 % |
+| Těžba a dobývání | 2013 | −3,24 % |
+| Těžba a dobývání | 2009 | −3,12 % |
+| Profesní, vědecké a technické činnosti | 2013 | −3,02 % |
+
+**Interpretace roku 2013:** Podle Českého statistického úřadu byl meziroční vývoj průměrných mezd v roce 2013 ovlivněn mimo jiné tím, že některé podniky vyplatily mimořádné manažerské odměny předčasně ve 4. čtvrtletí 2012 v očekávání zavedení solidárního zvýšení daně. Toto 7% solidární zvýšení daně z příjmů nad stanovenou hranici skutečně začalo platit od 1. ledna 2013. Přesun odměn zvýšil srovnávací základnu roku 2012 a mohl tak přispět k vykázaným meziročním poklesům v roce 2013. Nelze jím však automaticky vysvětlovat každý pokles v jednotlivých odvětvích.
+
+Zdroj k interpretaci: [Český statistický úřad – Komu se přidalo a komu zase ubralo](https://statistikaamy.csu.gov.cz/komu-se-pridalo-a-komu-zase-ubralo).
+
+**Závěr:** Průměrné mzdy nerostly ve všech odvětvích nepřetržitě. Ve většině odvětví došlo během sledovaného období alespoň jednou k meziročnímu poklesu. Výsledky se vztahují k ročním průměrným hrubým mzdám, nikoliv k vývoji mzdy každého zaměstnance nebo každého čtvrtletí.
+
+SQL postup je uložen v souboru [`SQL/03_research_question_1.sql`](SQL/03_research_question_1.sql).
+
+*Výsledky dalších výzkumných otázek budou doplněny postupně.*
 
 ## 7. Závěr
 
